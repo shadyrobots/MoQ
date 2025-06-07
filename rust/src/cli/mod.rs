@@ -2,6 +2,7 @@ use clap::{command, value_parser, Arg, ArgMatches, Command};
 
 pub(crate) mod client;
 pub(crate) mod server;
+pub(crate) mod moq_client;
 
 
 pub(crate) fn get_cli_matches() -> ArgMatches {
@@ -45,6 +46,26 @@ pub(crate) fn get_cli_matches() -> ArgMatches {
     .default_value("./certs/quicrs.key")
     .help("certificate file connections");
 
+  let shared_topic_arg = Arg::new("topic")
+    .value_parser(value_parser!(String))
+    .global(true)
+    .short('t')
+    .long("topic")
+    .value_name("TOPIC_NAME")
+    .env("MOQ_TOPIC")
+    .default_value("Test")
+    .help("topic to either publish or subscribe to");
+
+    let shared_msg_arg = Arg::new("message")
+    .value_parser(value_parser!(String))
+    .global(true)
+    .short('m')
+    .long("message")
+    .value_name("PAYLOAD_MESSAGE")
+    .env("PAYLOAD_MESSAGE")
+    .default_value("Hello, World!")
+    .help("Message that publishers will have forwarded to their subscribers");
+
   command!()
     .about(env!("CARGO_PKG_DESCRIPTION"))
     .author(env!("CARGO_PKG_AUTHORS"))
@@ -57,7 +78,11 @@ pub(crate) fn get_cli_matches() -> ArgMatches {
     .arg(shared_port_arg)
     .arg(shared_cert_arg)
     .arg(shared_key_arg)
+    .arg(shared_topic_arg)
+    .arg(shared_msg_arg)
     .subcommand(Command::new("client").about("Start a client"))
+    .subcommand(Command::new("publisher").about("Start a MoQ publisher"))
+    .subcommand(Command::new("subscriber").about("Start a MoQ subscriber"))
     .subcommand(Command::new("server").about("Start a server"))
     .get_matches()
 }
