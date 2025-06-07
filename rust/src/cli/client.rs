@@ -3,7 +3,7 @@ use s2n_quic::{client::Connect, Client};
 use std::{path::Path, net::SocketAddr};
 use std::net::ToSocketAddrs;
 
-use crate::protocol::echo::{EchoProtocol, MSG_TYPE_DATA};
+use crate::protocol::mqtt::{MQTTProtocol, PacketType};
 
 #[derive(Debug)]
 struct ClientOptions{
@@ -26,7 +26,7 @@ async fn run(options:ClientOptions) -> Result<()> {
     println!("Connecting client...");
     let connect = Connect::new(host_port_string).with_server_name("localhost");
     let mut connection = client.connect(connect).await?;
-
+    
     println!("Client connected...");
     // ensure the connection doesn't time out with inactivity
     connection.keep_alive(true)?;
@@ -38,7 +38,7 @@ async fn run(options:ClientOptions) -> Result<()> {
     //YOUR APPLICATION PROTOCOL STARTS HERE
     
     //STEP 1: Send a message to the server
-    let msg = EchoProtocol::new(MSG_TYPE_DATA, "Hello, world!".to_string());
+    let msg = MQTTProtocol::new("Hello, world!".to_string(), PacketType::PUBLISH,  0, "Hello".to_string(), 0,0);
     //println!("<== TO SERVER ==\n {} \n===", msg.to_json().unwrap());  
     msg.print_debug_msg("TO SERVER");
     let data = msg.to_bytes().unwrap();
@@ -47,7 +47,7 @@ async fn run(options:ClientOptions) -> Result<()> {
 
     //STEP 2: Receive a message from the server
     let rdata =  receive_stream.receive().await.expect("stream should be open").unwrap();
-    let result = EchoProtocol::from_bytes(rdata.to_vec()).unwrap();
+    let result = MQTTProtocol::from_bytes(rdata.to_vec()).unwrap();
     result.print_debug_msg("FROM SERVER");
     
     Ok(())
