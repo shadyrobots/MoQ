@@ -10,6 +10,8 @@ name = "quicrs"
 path = "src/main.rs"
 
 [dependencies]
+enum_primitive = "*"
+bincode = "1.0"
 clap = { version = "4.5.3", features = ["cargo", "unicode", "env"] }
 color-eyre = "0.6.3"
 s2n-quic = "1.34.0"
